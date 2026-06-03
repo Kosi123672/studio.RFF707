@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>RFF707 Design Studio Pro - Complete Edition</title>
+    <link rel="studio RFF707 icon" type="png"
+     href="image.png"> 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#00d4ff',
+                        dark: { bg: '#121212', panel: '#1e1e1e', border: '#333333' },
+                        light: { bg: '#f3f4f6', panel: '#ffffff', border: '#e5e7eb' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow: hidden; }
+        .canvas-bg {
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(45deg, #e5e7eb 25%, transparent 25%), 
+                linear-gradient(-45deg, #e5e7eb 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #e5e7eb 75%), 
+                linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        .dark .canvas-bg {
+            background-color: #1e1e1e;
+            background-image: 
+                linear-gradient(45deg, #2d2d2d 25%, transparent 25%), 
+                linear-gradient(-45deg, #2d2d2d 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #2d2d2d 75%), 
+                linear-gradient(-45deg, transparent 75%, #2d2d2d 75%);
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        .tool-btn.active { background-color: #00d4ff; color: #000; }
+        .layer-item.active { background-color: rgba(0, 212, 255, 0.15); border-left: 3px solid #00d4ff; }
+        input[type="color"] { -webkit-appearance: none; border: none; padding: 0; border-radius: 6px; overflow: hidden; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); }
+    </style>
+</head>
+<body class="bg-light-bg text-gray-800 dark:bg-dark-bg dark:text-gray-100 h-screen flex flex-col transition-colors duration-200">
+
+    <!-- Top Bar -->
+    <header class="h-12 bg-light-panel dark:bg-dark-panel border-b border-light-border dark:border-dark-border flex items-center justify-between px-4 shrink-0 z-20">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-crown text-primary text-lg"></i>
+            <span class="font-bold text-sm tracking-tight hidden sm:block">RFF707 Studio Pro</span>
+        </div>
+        
+        <div class="flex items-center gap-1.5">
+            <button onclick="openFile()" class="px-2.5 py-1.5 text-xs font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition flex items-center gap-1.5">
+                <i class="fas fa-folder-open"></i> <span class="hidden sm:inline">Buka</span>
+            </button>
+            <button onclick="exportImage()" class="px-2.5 py-1.5 text-xs font-medium rounded-md bg-primary text-black hover:bg-cyan-400 transition flex items-center gap-1.5">
+                <i class="fas fa-download"></i> <span class="hidden sm:inline">Export</span>
+            </button>
+            <div class="w-px h-5 bg-gray-300 dark:bg-gray-700 mx-1"></div>
+            <button onclick="toggleTheme()" class="w-8 h-8 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition flex items-center justify-center" title="Toggle Theme">
+                <i class="fas fa-moon dark:hidden text-xs"></i>
+                <i class="fas fa-sun hidden dark:block text-yellow-400 text-xs"></i>
+            </button>
+            <button onclick="toggleGrid()" class="w-8 h-8 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition flex items-center justify-center" title="Toggle Grid">
+                <i class="fas fa-th text-xs"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Workspace -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Left Toolbar -->
+        <aside class="w-14 sm:w-16 bg-light-panel dark:bg-dark-panel border-r border-light-border dark:border-dark-border flex flex-col items-center py-3 gap-1.5 shrink-0 overflow-y-auto z-10">
+            <button class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" data-tool="hand" title="Hand (Pan)">
+                <i class="fas fa-hand-paper text-sm"></i><span class="text-[9px] font-medium">Hand</span>
+            </button>
+            <button class="tool-btn active w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" data-tool="brush" title="Brush">
+                <i class="fas fa-paint-brush text-sm"></i><span class="text-[9px] font-medium">Brush</span>
+            </button>
+            <button class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" data-tool="eraser" title="Eraser">
+                <i class="fas fa-eraser text-sm"></i><span class="text-[9px] font-medium">Eraser</span>
+            </button>
+            <button class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" data-tool="bucket" title="Bucket Fill">
+                <i class="fas fa-fill-drip text-sm"></i><span class="text-[9px] font-medium">Fill</span>
+            </button>
+            <button class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" data-tool="picker" title="Color Picker">
+                <i class="fas fa-eye-dropper text-sm"></i><span class="text-[9px] font-medium">Picker</span>
+            </button>
+            
+            <div class="w-6 h-px bg-gray-300 dark:bg-gray-700 my-1"></div>
+            
+            <button class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" data-tool="line" title="Line">
+                <i class="fas fa-minus text-sm"></i><span class="text-[9px] font-medium">Line</span>
+            </button>
+            <button class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" data-tool="rectangle" title="Rectangle">
+                <i class="far fa-square text-sm"></i><span class="text-[9px] font-medium">Rect</span>
+            </button>
+            <button class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" data-tool="circle" title="Circle">
+                <i class="far fa-circle text-sm"></i><span class="text-[9px] font-medium">Circle</span>
+            </button>
+            <button class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" data-tool="text" title="Text">
+                <i class="fas fa-font text-sm"></i><span class="text-[9px] font-medium">Text</span>
+            </button>
+            
+            <div class="w-6 h-px bg-gray-300 dark:bg-gray-700 my-1"></div>
+            
+            <button class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" data-tool="crop" title="Crop">
+                <i class="fas fa-crop-alt text-sm"></i><span class="text-[9px] font-medium">Crop</span>
+            </button>
+            <button onclick="undo()" class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" title="Undo (Ctrl+Z)">
+                <i class="fas fa-undo text-sm"></i><span class="text-[9px] font-medium">Undo</span>
+            </button>
+            <button onclick="redo()" class="tool-btn w-10 h-10 rounded-lg flex flex-col items-center justify-center gap-0.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition" title="Redo (Ctrl+Y)">
+                <i class="fas fa-redo text-sm"></i><span class="text-[9px] font-medium">Redo</span>
+            </button>
+        </aside>
+
+        <!-- Canvas Area -->
+        <main class="flex-1 relative overflow-auto canvas-bg flex items-center justify-center p-4 sm:p-8" id="canvasArea">
+            <div id="canvasWrapper" class="relative shadow-2xl transition-transform duration-75 ease-out" style="transform-origin: center center;">
+                <canvas id="mainCanvas" width="800" height="600" class="bg-white block cursor-crosshair"></canvas>
+            </div>
+        </main>
+
+        <!-- Right Panel -->
+        <aside class="w-64 bg-light-panel dark:bg-dark-panel border-l border-light-border dark:border-dark-border flex flex-col shrink-0 overflow-hidden z-10">
+            <div class="flex-1 overflow-y-auto p-3 space-y-4">
+                
+                <!-- Tool Properties (Compact) -->
+                <div>
+                    <h3 class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i class="fas fa-sliders-h"></i> Properti Alat
+                    </h3>
+                    
+                    <div class="space-y-2.5">
+                        <div>
+                            <label class="text-[10px] font-semibold text-gray-600 dark:text-gray-300 mb-1 block">Warna Garis (Stroke)</label>
+                            <div class="flex items-center gap-1.5">
+                                <input type="color" id="strokeColor" value="#00d4ff" class="w-7 h-7 rounded cursor-pointer shrink-0">
+                                <input type="text" id="strokeColorHex" value="#00d4ff" class="flex-1 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-[11px] font-mono focus:outline-none focus:border-primary">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-1.5 rounded">
+                            <label class="text-[11px] font-medium flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" id="fillShape" class="w-3.5 h-3.5 rounded text-primary focus:ring-primary border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+                                Isi Bentuk
+                            </label>
+                            <input type="color" id="fillColor" value="#ffffff" class="w-6 h-6 rounded cursor-pointer disabled:opacity-30" disabled>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <label class="text-[10px] font-semibold text-gray-600 dark:text-gray-300">Ukuran</label>
+                                <span id="sizeVal" class="text-[10px] font-mono text-primary">5px</span>
+                            </div>
+                            <input type="range" id="brushSize" min="1" max="100" value="5" class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-200 dark:bg-gray-800"></div>
+
+                <!-- Layers -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fas fa-layer-group"></i> Layer
+                        </h3>
+                        <div class="flex gap-1">
+                            <button onclick="addLayer()" class="w-6 h-6 rounded bg-gray-200 dark:bg-gray-800 hover:bg-primary hover:text-black transition flex items-center justify-center text-[10px]" title="New Layer"><i class="fas fa-plus"></i></button>
+                            <button onclick="deleteLayer()" class="w-6 h-6 rounded bg-gray-200 dark:bg-gray-800 hover:bg-red-500 hover:text-white transition flex items-center justify-center text-[10px]" title="Delete Layer"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div id="layersList" class="space-y-1 max-h-40 overflow-y-auto pr-1"></div>
+                    <div class="mt-2">
+                        <div class="flex justify-between mb-0.5">
+                            <label class="text-[10px] text-gray-600 dark:text-gray-400">Opacity</label>
+                            <span id="opacityVal" class="text-[10px] font-mono text-primary">100%</span>
+                        </div>
+                        <input type="range" id="layerOpacity" min="0" max="100" value="100" class="w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary">
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-200 dark:bg-gray-800"></div>
+
+                <!-- Filters & Transform -->
+                <div>
+                    <h3 class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <i class="fas fa-magic"></i> Filter & Transform
+                    </h3>
+                    <div class="grid grid-cols-2 gap-1.5 mb-2">
+                        <button onclick="applyFilter('grayscale')" class="px-2 py-1.5 text-[10px] bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition text-center">Grayscale</button>
+                        <button onclick="applyFilter('sepia')" class="px-2 py-1.5 text-[10px] bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition text-center">Sepia</button>
+                        <button onclick="applyFilter('invert')" class="px-2 py-1.5 text-[10px] bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition text-center">Invert</button>
+                        <button onclick="applyFilter('brightness')" class="px-2 py-1.5 text-[10px] bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition text-center">Bright +</button>
+                    </div>
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <button onclick="rotate('left')" class="p-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition text-center text-xs" title="Rotate Left"><i class="fas fa-undo-alt"></i></button>
+                        <button onclick="rotate('right')" class="p-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition text-center text-xs" title="Rotate Right"><i class="fas fa-redo-alt"></i></button>
+                        <button onclick="rotate('flipH')" class="p-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition text-center text-xs" title="Flip Horizontal"><i class="fas fa-arrows-alt-h"></i></button>
+                        <button onclick="rotate('flipV')" class="p-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition text-center text-xs" title="Flip Vertical"><i class="fas fa-arrows-alt-v"></i></button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5 mt-2">
+                        <button onclick="document.getElementById('resizeModal').classList.add('flex')" class="px-2 py-1.5 text-[10px] bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition flex items-center justify-center gap-1.5"><i class="fas fa-expand text-[10px]"></i> Resize</button>
+                        <button onclick="applyCrop()" class="px-2 py-1.5 text-[10px] bg-primary text-black hover:bg-cyan-400 rounded transition flex items-center justify-center gap-1.5 font-medium"><i class="fas fa-check text-[10px]"></i> Apply Crop</button>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+    </div>
+
+    <!-- Modals -->
+    <div id="textModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md p-5 space-y-3 border border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-bold flex items-center gap-2"><i class="fas fa-font text-primary"></i> Tambahkan Teks</h3>
+            <input type="text" id="textInput" placeholder="Masukkan teks..." class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary transition">
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[10px] text-gray-500 mb-1 block">Font Family</label>
+                    <select id="fontFamily" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-1.5 text-xs">
+                        <option>Inter</option>
+                        <option>Arial</option>
+                        <option>Georgia</option>
+                        <option>Courier New</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 mb-1 block">Size: <span id="fontSizeVal">32</span>px</label>
+                    <input type="range" id="fontSize" min="12" max="120" value="32" class="w-full accent-primary mt-1">
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleTextStyle('bold')" id="btnBold" class="flex-1 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-700 font-bold transition text-sm">B</button>
+                <button onclick="toggleTextStyle('italic')" id="btnItalic" class="flex-1 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-700 italic transition text-sm">I</button>
+                <button onclick="toggleTextStyle('underline')" id="btnUnderline" class="flex-1 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-700 underline transition text-sm">U</button>
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeModal('textModal')" class="flex-1 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition font-medium text-sm">Batal</button>
+                <button onclick="addText()" class="flex-1 py-2 rounded-lg bg-primary text-black hover:bg-cyan-400 transition font-bold text-sm">Tambah Teks</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resizeModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm p-5 space-y-3 border border-gray-200 dark:border-gray-700">
+            <h3 class="text-sm font-bold">Ubah Ukuran Canvas</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[10px] text-gray-500 mb-1 block">Lebar (px)</label>
+                    <input type="number" id="resizeW" value="800" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-1.5 text-sm">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 mb-1 block">Tinggi (px)</label>
+                    <input type="number" id="resizeH" value="600" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-1.5 text-sm">
+                </div>
+            </div>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeModal('resizeModal')" class="flex-1 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition text-sm">Batal</button>
+                <button onclick="resizeCanvas()" class="flex-1 py-2 rounded-lg bg-primary text-black hover:bg-cyan-400 transition font-bold text-sm">Terapkan</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="uploadInput" accept="image/jpeg,image/png,image/webp" class="hidden">
+
+    <script>
+        // ============================================================
+        // GLOBAL STATE & INIT
+        // ============================================================
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const canvasWrapper = document.getElementById('canvasWrapper');
+        
+        let layers = [];
+        let activeLayer = 0;
+        let historyStack = [];
+        let historyIndex = -1;
+        
+        let currentTool = 'brush';
+        let isDrawing = false;
+        let lastX, lastY, startX, startY;
+        
+        let canvasZoom = 1;
+        let canvasOffsetX = 0, canvasOffsetY = 0;
+        let isPanning = false, panStartX, panStartY;
+        
+        let cropStart = null, cropEnd = null;
+        let gridEnabled = false;
+        let textStyles = { bold: false, italic: false, underline: false };
+
+        function init() {
+            addLayer();
+            updateToolUI();
+            setupEventListeners();
+            showToast('Canvas siap digunakan!');
+        }
+
+        // ============================================================
+        // LAYER MANAGEMENT
+        // ============================================================
+        function createLayerCanvas() {
+            const c = document.createElement('canvas');
+            c.width = canvas.width;
+            c.height = canvas.height;
+            return c;
+        }
+
+        function addLayer() {
+            const c = createLayerCanvas();
+            if (layers.length === 0) {
+                const actx = c.getContext('2d');
+                actx.fillStyle = '#ffffff';
+                actx.fillRect(0, 0, c.width, c.height);
+            }
+            layers.push({ id: Date.now(), name: `Layer ${layers.length + 1}`, canvas: c, visible: true, opacity: 1 });
+            activeLayer = layers.length - 1;
+            renderLayersUI();
+            renderCanvas();
+            saveToHistory();
+        }
+
+        function deleteLayer() {
+            if (layers.length <= 1) { showToast('Tidak bisa menghapus layer terakhir', true); return; }
+            layers.splice(activeLayer, 1);
+            if (activeLayer >= layers.length) activeLayer = layers.length - 1;
+            renderLayersUI();
+            renderCanvas();
+            saveToHistory();
+            showToast('Layer dihapus');
+        }
+
+        function renderLayersUI() {
+            const container = document.getElementById('layersList');
+            container.innerHTML = layers.map((l, idx) => `
+                <div class="layer-item flex items-center gap-2 p-1.5 rounded cursor-pointer transition ${idx === activeLayer ? 'active' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}" onclick="setActiveLayer(${idx})">
+                    <i class="fas fa-image text-gray-400 text-[10px]"></i>
+                    <span class="flex-1 text-[11px] font-medium truncate" contenteditable="true" onblur="layers[${idx}].name = this.innerText">${l.name}</span>
+                    <button onclick="event.stopPropagation(); toggleLayerVisibility(${idx})" class="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-200 dark:hover:bg-gray-700 ${l.visible ? 'text-primary' : 'text-gray-500'}">
+                        <i class="fas ${l.visible ? 'fa-eye' : 'fa-eye-slash'} text-[10px]"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function setActiveLayer(idx) {
+            activeLayer = idx;
+            renderLayersUI();
+            document.getElementById('layerOpacity').value = layers[activeLayer].opacity * 100;
+            document.getElementById('opacityVal').innerText = Math.round(layers[activeLayer].opacity * 100) + '%';
+        }
+
+        function toggleLayerVisibility(idx) {
+            layers[idx].visible = !layers[idx].visible;
+            renderLayersUI();
+            renderCanvas();
+        }
+
+        function renderCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            layers.forEach(layer => {
+                if (layer.visible) {
+                    ctx.globalAlpha = layer.opacity;
+                    ctx.drawImage(layer.canvas, 0, 0);
+                }
+            });
+            ctx.globalAlpha = 1.0;
+        }
+
+        function getActiveCtx() {
+            return layers[activeLayer].canvas.getContext('2d');
+        }
+
+        function saveToHistory() {
+            historyStack = historyStack.slice(0, historyIndex + 1);
+            historyStack.push({
+                layerIndex: activeLayer,
+                data: layers[activeLayer].canvas.toDataURL()
+            });
+            historyIndex++;
+            if (historyStack.length > 40) historyStack.shift();
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                restoreHistoryState();
+                showToast('Undo');
+            }
+        }
+
+        function redo() {
+            if (historyIndex < historyStack.length - 1) {
+                historyIndex++;
+                restoreHistoryState();
+                showToast('Redo');
+            }
+        }
+
+        function restoreHistoryState() {
+            const state = historyStack[historyIndex];
+            const img = new Image();
+            img.onload = () => {
+                const actx = layers[state.layerIndex].canvas.getContext('2d');
+                actx.clearRect(0, 0, canvas.width, canvas.height);
+                actx.drawImage(img, 0, 0);
+                activeLayer = state.layerIndex;
+                renderLayersUI();
+                renderCanvas();
+            };
+            img.src = state.data;
+        }
+
+        // ============================================================
+        // DRAWING LOGIC (Independent Strokes)
+        // ============================================================
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: Math.max(0, Math.min(canvas.width, (clientX - rect.left) * scaleX)),
+                y: Math.max(0, Math.min(canvas.height, (clientY - rect.top) * scaleY))
+            };
+        }
+
+        function startDraw(e) {
+            if (currentTool !== 'brush' && currentTool !== 'eraser') return;
+            isDrawing = true;
+            const pos = getPos(e);
+            lastX = pos.x;
+            lastY = pos.y;
+            
+            const actx = getActiveCtx();
+            actx.beginPath();
+            actx.moveTo(lastX, lastY);
+            actx.lineTo(lastX, lastY);
+            actx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : document.getElementById('strokeColor').value;
+            actx.lineWidth = parseInt(document.getElementById('brushSize').value);
+            actx.lineCap = 'round';
+            actx.lineJoin = 'round';
+            actx.stroke();
+            renderCanvas();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const pos = getPos(e);
+            const actx = getActiveCtx();
+            
+            actx.beginPath();
+            actx.moveTo(lastX, lastY);
+            actx.lineTo(pos.x, pos.y);
+            actx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : document.getElementById('strokeColor').value;
+            actx.lineWidth = parseInt(document.getElementById('brushSize').value);
+            actx.lineCap = 'round';
+            actx.lineJoin = 'round';
+            actx.stroke();
+            
+            lastX = pos.x;
+            lastY = pos.y;
+            renderCanvas();
+        }
+
+        function stopDraw() {
+            if (isDrawing) {
+                isDrawing = false;
+                const actx = getActiveCtx();
+                actx.beginPath();
+                renderCanvas();
+                saveToHistory();
+            }
+        }
+
+        // Shapes
+        function startShape(e) {
+            if (!['rectangle', 'circle', 'line'].includes(currentTool)) return;
+            isDrawing = true;
+            const pos = getPos(e);
+            startX = pos.x;
+            startY = pos.y;
+            window.shapeStartImageData = getActiveCtx().getImageData(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawShape(e) {
+            if (!isDrawing) return;
+            const pos = getPos(e);
+            const actx = getActiveCtx();
+            
+            actx.putImageData(window.shapeStartImageData, 0, 0);
+            actx.beginPath();
+            actx.strokeStyle = document.getElementById('strokeColor').value;
+            actx.lineWidth = parseInt(document.getElementById('brushSize').value);
+            actx.lineCap = 'round';
+            actx.lineJoin = 'round';
+            
+            const fill = document.getElementById('fillShape').checked;
+            if (fill) actx.fillStyle = document.getElementById('fillColor').value;
+
+            if (currentTool === 'rectangle') {
+                if (fill) actx.fillRect(startX, startY, pos.x - startX, pos.y - startY);
+                actx.strokeRect(startX, startY, pos.x - startX, pos.y - startY);
+            } else if (currentTool === 'circle') {
+                const radiusX = Math.abs(pos.x - startX) / 2;
+                const radiusY = Math.abs(pos.y - startY) / 2;
+                const centerX = startX + (pos.x - startX) / 2;
+                const centerY = startY + (pos.y - startY) / 2;
+                actx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+                if (fill) actx.fill();
+                actx.stroke();
+            } else if (currentTool === 'line') {
+                actx.moveTo(startX, startY);
+                actx.lineTo(pos.x, pos.y);
+                actx.stroke();
+            }
+            renderCanvas();
+        }
+
+        function endShape() {
+            if (isDrawing) {
+                isDrawing = false;
+                const actx = getActiveCtx();
+                actx.beginPath();
+                renderCanvas();
+                saveToHistory();
+            }
+        }
+
+        // Bucket Fill
+        function bucketFill(e) {
+            const pos = getPos(e);
+            const x = Math.floor(pos.x);
+            const y = Math.floor(pos.y);
+            const actx = getActiveCtx();
+            const imageData = actx.getImageData(0, 0, canvas.width, canvas.height);
+            const targetColor = getPixelColor(imageData, x, y);
+            const fillColor = hexToRgb(document.getElementById('strokeColor').value);
+            
+            if (targetColor.r === fillColor.r && targetColor.g === fillColor.g && targetColor.b === fillColor.b) return;
+            
+            floodFill(imageData, x, y, targetColor, fillColor);
+            actx.putImageData(imageData, 0, 0);
+            renderCanvas();
+            saveToHistory();
+            showToast('Bucket fill diterapkan');
+        }
+
+        function getPixelColor(imageData, x, y) {
+            const idx = (y * imageData.width + x) * 4;
+            return { r: imageData.data[idx], g: imageData.data[idx+1], b: imageData.data[idx+2], a: imageData.data[idx+3] };
+        }
+
+        function floodFill(imageData, startX, startY, target, fill) {
+            const stack = [[startX, startY]];
+            const visited = new Set();
+            const w = imageData.width, h = imageData.height;
+            
+            while (stack.length > 0) {
+                const [x, y] = stack.pop();
+                if (x < 0 || x >= w || y < 0 || y >= h) continue;
+                const key = y * w + x;
+                if (visited.has(key)) continue;
+                
+                const idx = key * 4;
+                if (imageData.data[idx] === target.r && imageData.data[idx+1] === target.g && imageData.data[idx+2] === target.b) {
+                    imageData.data[idx] = fill.r;
+                    imageData.data[idx+1] = fill.g;
+                    imageData.data[idx+2] = fill.b;
+                    imageData.data[idx+3] = 255;
+                    visited.add(key);
+                    stack.push([x+1, y], [x-1, y], [x, y+1], [x, y-1]);
+                }
+            }
+        }
+
+        function hexToRgb(hex) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return { r, g, b };
+        }
+
+        // Color Picker
+        function pickColor(e) {
+            const pos = getPos(e);
+            const pixel = ctx.getImageData(Math.floor(pos.x), Math.floor(pos.y), 1, 1).data;
+            const color = `#${pixel[0].toString(16).padStart(2,'0')}${pixel[1].toString(16).padStart(2,'0')}${pixel[2].toString(16).padStart(2,'0')}`;
+            document.getElementById('strokeColor').value = color;
+            document.getElementById('strokeColorHex').value = color;
+            showToast(`Warna dipilih: ${color}`);
+        }
+
+        // Text
+        function addText() {
+            const text = document.getElementById('textInput').value || 'RFF707';
+            const fontFamily = document.getElementById('fontFamily').value;
+            const fontSize = parseInt(document.getElementById('fontSize').value);
+            const color = document.getElementById('strokeColor').value;
+            
+            let fontStyle = '';
+            if (textStyles.bold) fontStyle += 'bold ';
+            if (textStyles.italic) fontStyle += 'italic ';
+            fontStyle += `${fontSize}px ${fontFamily}`;
+            
+            const actx = getActiveCtx();
+            actx.font = fontStyle;
+            actx.fillStyle = color;
+            actx.fillText(text, 50, 100);
+            
+            if (textStyles.underline) {
+                actx.beginPath();
+                actx.moveTo(50, 105);
+                actx.lineTo(50 + actx.measureText(text).width, 105);
+                actx.strokeStyle = color;
+                actx.lineWidth = Math.max(2, fontSize / 15);
+                actx.stroke();
+            }
+            
+            renderCanvas();
+            saveToHistory();
+            closeModal('textModal');
+            showToast('Teks ditambahkan');
+        }
+
+        function toggleTextStyle(style) {
+            textStyles[style] = !textStyles[style];
+            document.getElementById(`btn${style.charAt(0).toUpperCase() + style.slice(1)}`).classList.toggle('bg-primary');
+            document.getElementById(`btn${style.charAt(0).toUpperCase() + style.slice(1)}`).classList.toggle('text-black');
+        }
+
+        // Crop
+        function startCrop(e) {
+            const pos = getPos(e);
+            cropStart = pos;
+            cropEnd = pos;
+            isDrawing = true;
+            window.cropStartImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawCrop(e) {
+            if (!isDrawing) return;
+            cropEnd = getPos(e);
+            ctx.putImageData(window.cropStartImageData, 0, 0);
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            
+            ctx.clearRect(x, y, w, h);
+            ctx.strokeStyle = '#00d4ff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(x, y, w, h);
+            ctx.setLineDash([]);
+        }
+
+        function applyCrop() {
+            if (!cropStart || !cropEnd) { showToast('Pilih area crop terlebih dahulu', true); return; }
+            const x = Math.min(cropStart.x, cropEnd.x);
+            const y = Math.min(cropStart.y, cropEnd.y);
+            const w = Math.abs(cropEnd.x - cropStart.x);
+            const h = Math.abs(cropEnd.y - cropStart.y);
+            
+            if (w > 10 && h > 10) {
+                layers.forEach(layer => {
+                    const imgData = layer.canvas.getContext('2d').getImageData(x, y, w, h);
+                    layer.canvas.width = w;
+                    layer.canvas.height = h;
+                    layer.canvas.getContext('2d').putImageData(imgData, 0, 0);
+                });
+                canvas.width = w;
+                canvas.height = h;
+                renderCanvas();
+                saveToHistory();
+                showToast('Canvas berhasil di-crop');
+            }
+            cropStart = null;
+            cropEnd = null;
+            currentTool = 'brush';
+            updateToolUI();
+        }
+
+        // Filters & Transform
+        function applyFilter(type) {
+            const actx = getActiveCtx();
+            const imgData = actx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imgData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i], g = data[i+1], b = data[i+2];
+                if (type === 'grayscale') {
+                    const gray = 0.299*r + 0.587*g + 0.114*b;
+                    data[i] = data[i+1] = data[i+2] = gray;
+                } else if (type === 'sepia') {
+                    data[i] = Math.min(255, r*0.393 + g*0.769 + b*0.189);
+                    data[i+1] = Math.min(255, r*0.349 + g*0.686 + b*0.168);
+                    data[i+2] = Math.min(255, r*0.272 + g*0.534 + b*0.131);
+                } else if (type === 'invert') {
+                    data[i] = 255 - r; data[i+1] = 255 - g; data[i+2] = 255 - b;
+                } else if (type === 'brightness') {
+                    data[i] = Math.min(255, r + 40); data[i+1] = Math.min(255, g + 40); data[i+2] = Math.min(255, b + 40);
+                }
+            }
+            actx.putImageData(imgData, 0, 0);
+            renderCanvas();
+            saveToHistory();
+            showToast(`Filter ${type} diterapkan`);
+        }
+
+        function rotate(direction) {
+            const temp = document.createElement('canvas');
+            temp.width = canvas.width; temp.height = canvas.height;
+            const tctx = temp.getContext('2d');
+            tctx.drawImage(canvas, 0, 0);
+            
+            if (direction === 'left' || direction === 'right') {
+                canvas.width = temp.height; canvas.height = temp.width;
+                layers.forEach(l => { l.canvas.width = canvas.width; l.canvas.height = canvas.height; });
+            }
+            
+            const actx = getActiveCtx();
+            actx.translate(canvas.width/2, canvas.height/2);
+            if (direction === 'left') actx.rotate(-Math.PI/2);
+            else if (direction === 'right') actx.rotate(Math.PI/2);
+            else if (direction === 'flipH') { actx.translate(canvas.width/2, 0); actx.scale(-1, 1); }
+            else if (direction === 'flipV') { actx.translate(0, canvas.height/2); actx.scale(1, -1); }
+            
+            actx.drawImage(temp, -temp.width/2, -temp.height/2);
+            actx.setTransform(1, 0, 0, 1, 0, 0);
+            
+            layers.forEach((l, idx) => {
+                if (idx !== activeLayer) {
+                    const lctx = l.canvas.getContext('2d');
+                    lctx.setTransform(1, 0, 0, 1, 0, 0);
+                    lctx.drawImage(canvas, 0, 0);
+                }
+            });
+            
+            renderCanvas();
+            saveToHistory();
+            showToast(`Transformasi ${direction} diterapkan`);
+        }
+
+        function resizeCanvas() {
+            const w = parseInt(document.getElementById('resizeW').value);
+            const h = parseInt(document.getElementById('resizeH').value);
+            if (w > 0 && h > 0) {
+                const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                canvas.width = w; canvas.height = h;
+                layers.forEach(l => {
+                    l.canvas.width = w; l.canvas.height = h;
+                    const lctx = l.canvas.getContext('2d');
+                    lctx.fillStyle = '#ffffff';
+                    lctx.fillRect(0, 0, w, h);
+                    lctx.putImageData(imgData, 0, 0);
+                });
+                renderCanvas();
+                saveToHistory();
+                closeModal('resizeModal');
+                showToast(`Ukuran diubah ke ${w}x${h}`);
+            }
+        }
+
+        // File Operations
+        function openFile() { document.getElementById('uploadInput').click(); }
+        document.getElementById('uploadInput').addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        canvas.width = img.width; canvas.height = img.height;
+                        layers.forEach(l => { l.canvas.width = img.width; l.canvas.height = img.height; });
+                        const actx = getActiveCtx();
+                        actx.drawImage(img, 0, 0);
+                        renderCanvas();
+                        saveToHistory();
+                        showToast('Gambar berhasil dimuat');
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        function exportImage() {
+            renderCanvas();
+            const link = document.createElement('a');
+            link.download = `rff707_design_${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            showToast('Gambar diekspor sebagai PNG');
+        }
+
+        // UI Helpers
+        function updateToolUI() {
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tool === currentTool);
+            });
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            if (gridEnabled) drawGrid();
+        }
+
+        function toggleGrid() {
+            gridEnabled = !gridEnabled;
+            if (gridEnabled) {
+                if (!document.getElementById('gridOverlay')) {
+                    const grid = document.createElement('canvas');
+                    grid.id = 'gridOverlay';
+                    grid.className = 'absolute top-0 left-0 pointer-events-none z-10';
+                    canvasWrapper.appendChild(grid);
+                }
+                drawGrid();
+            } else {
+                const grid = document.getElementById('gridOverlay');
+                if (grid) grid.remove();
+            }
+            showToast(gridEnabled ? 'Grid aktif' : 'Grid nonaktif');
+        }
+
+        function drawGrid() {
+            const grid = document.getElementById('gridOverlay');
+            grid.width = canvas.width; grid.height = canvas.height;
+            const gctx = grid.getContext('2d');
+            gctx.clearRect(0, 0, grid.width, grid.height);
+            gctx.strokeStyle = document.documentElement.classList.contains('dark') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            gctx.lineWidth = 1;
+            const step = 50;
+            gctx.beginPath();
+            for (let x = 0; x <= grid.width; x += step) { gctx.moveTo(x, 0); gctx.lineTo(x, grid.height); }
+            for (let y = 0; y <= grid.height; y += step) { gctx.moveTo(0, y); gctx.lineTo(grid.width, y); }
+            gctx.stroke();
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('flex'); document.getElementById(id).classList.add('hidden'); }
+        
+        function showToast(msg, isError = false) {
+            const t = document.createElement('div');
+            t.className = `fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full shadow-xl z-50 text-xs font-medium transition-all duration-300 ${isError ? 'bg-red-500 text-white' : 'bg-primary text-black'}`;
+            t.innerText = msg;
+            document.body.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translate(-50%, 10px)'; setTimeout(() => t.remove(), 300); }, 2000);
+        }
+
+        // Event Listeners Setup
+        function setupEventListeners() {
+            document.querySelectorAll('[data-tool]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentTool = btn.dataset.tool;
+                    updateToolUI();
+                    canvas.style.cursor = currentTool === 'hand' ? 'grab' : 'crosshair';
+                    if (currentTool === 'text') {
+                        document.getElementById('textModal').classList.remove('hidden');
+                        document.getElementById('textModal').classList.add('flex');
+                    }
+                });
+            });
+
+            canvas.addEventListener('mousedown', (e) => {
+                if (currentTool === 'hand') { isPanning = true; panStartX = e.clientX - canvasOffsetX; panStartY = e.clientY - canvasOffsetY; canvas.style.cursor = 'grabbing'; return; }
+                if (['brush', 'eraser'].includes(currentTool)) startDraw(e);
+                else if (['rectangle', 'circle', 'line'].includes(currentTool)) startShape(e);
+                else if (currentTool === 'bucket') bucketFill(e);
+                else if (currentTool === 'picker') pickColor(e);
+                else if (currentTool === 'crop') startCrop(e);
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (isPanning) {
+                    canvasOffsetX = e.clientX - panStartX;
+                    canvasOffsetY = e.clientY - panStartY;
+                    canvasWrapper.style.transform = `translate(${canvasOffsetX}px, ${canvasOffsetY}px) scale(${canvasZoom})`;
+                    return;
+                }
+                if (['brush', 'eraser'].includes(currentTool)) draw(e);
+                else if (['rectangle', 'circle', 'line'].includes(currentTool)) drawShape(e);
+                else if (currentTool === 'crop') drawCrop(e);
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (isPanning) { isPanning = false; canvas.style.cursor = 'grab'; return; }
+                stopDraw();
+                endShape();
+            });
+
+            canvas.addEventListener('touchstart', (e) => { e.preventDefault(); if (['brush', 'eraser'].includes(currentTool)) startDraw(e); else if (['rectangle', 'circle', 'line'].includes(currentTool)) startShape(e); else if (currentTool === 'picker') pickColor(e); else if (currentTool === 'crop') startCrop(e); }, { passive: false });
+            canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (['brush', 'eraser'].includes(currentTool)) draw(e); else if (['rectangle', 'circle', 'line'].includes(currentTool)) drawShape(e); else if (currentTool === 'crop') drawCrop(e); }, { passive: false });
+            canvas.addEventListener('touchend', () => { stopDraw(); endShape(); });
+
+            const strokeInput = document.getElementById('strokeColor');
+            strokeInput.addEventListener('input', (e) => {
+                document.getElementById('strokeColorHex').value = e.target.value;
+            });
+            document.getElementById('strokeColorHex').addEventListener('change', (e) => {
+                if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
+                    strokeInput.value = e.target.value;
+                }
+            });
+
+            document.getElementById('fillShape').addEventListener('change', (e) => {
+                document.getElementById('fillColor').disabled = !e.target.checked;
+            });
+
+            document.getElementById('brushSize').addEventListener('input', (e) => {
+                document.getElementById('sizeVal').innerText = e.target.value + 'px';
+            });
+
+            document.getElementById('fontSize').addEventListener('input', (e) => {
+                document.getElementById('fontSizeVal').innerText = e.target.value;
+            });
+
+            document.getElementById('layerOpacity').addEventListener('input', (e) => {
+                layers[activeLayer].opacity = e.target.value / 100;
+                document.getElementById('opacityVal').innerText = e.target.value + '%';
+                renderCanvas();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+                if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+                if (e.ctrlKey && e.key === 's') { e.preventDefault(); exportImage(); }
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J'))) { e.preventDefault(); showToast('🔒 Inspect disabled', true); }
+            });
+            document.addEventListener('contextmenu', (e) => e.preventDefault());
+        }
+
+        init();
+    </script>
+</body>
+</html>
+
